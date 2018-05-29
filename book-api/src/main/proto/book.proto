@@ -1,0 +1,24 @@
+syntax = "proto3";
+option java_multiple_files = false;
+option java_package = "com.hll.grpc.api";
+option java_outer_classname = "BookServiceProto";
+option objc_class_prefix = "TS";
+
+package com.hll.grpc.api;
+
+service BookService {
+    rpc AddBook (Book) returns (Result) {}
+    rpc LotsOfReplies (Book) returns (stream Result) {}
+    rpc pingPong (stream Book) returns (stream Result) {}
+}
+
+message Book {
+    string name = 1;
+    string desc = 2;
+    int32 count = 3;
+}
+
+message Result {
+    bool success = 1;
+    string msg = 2;
+}

@@ -1,0 +1,22 @@
+syntax = "proto3";
+option java_multiple_files = false;
+option java_package = "com.hll.grpc.api.auth";
+option java_outer_classname = "AuthServiceProto";
+option objc_class_prefix = "TS";
+
+package com.hll.grpc.api.auth;
+
+service AuthService {
+    rpc Authenticate (Credit) returns (Result) {}
+}
+
+message Credit {
+    string username = 1;
+    string password = 2;
+}
+
+message Result {
+    bool success = 1;
+    string msg = 2;
+    string token = 3;
+}
