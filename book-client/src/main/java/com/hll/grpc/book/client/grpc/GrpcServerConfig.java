@@ -42,6 +42,7 @@ public class GrpcServerConfig {
     );
     if (result.getSuccess()) {
       this.token = result.getToken();
+      System.out.println(token);
     }
   }
 

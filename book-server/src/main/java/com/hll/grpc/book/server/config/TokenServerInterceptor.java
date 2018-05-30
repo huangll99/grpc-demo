@@ -1,9 +1,14 @@
 package com.hll.grpc.book.server.config;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import io.grpc.*;
 import io.grpc.internal.NoopServerCall;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.io.UnsupportedEncodingException;
 
 /**
  * Author: huangll
@@ -12,8 +17,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class TokenServerInterceptor implements ServerInterceptor {
 
-  @Autowired
-  private TokenStore tokenStore;
 
   @Override
   public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
@@ -32,6 +35,20 @@ public class TokenServerInterceptor implements ServerInterceptor {
   }
 
   private boolean checkToken(String token) {
-    return tokenStore.get(token) != null;
+    Algorithm algorithm2;
+    try {
+      algorithm2 = Algorithm.HMAC256("SECRETs");
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
+    JWTVerifier jwtVerifier = JWT.require(algorithm2)
+        .withIssuer("gsafety")
+        .build();
+    try {
+      jwtVerifier.verify(token);
+    } catch (JWTVerificationException e) {
+      return false;
+    }
+    return true;
   }
 }

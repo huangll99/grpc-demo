@@ -1,11 +1,13 @@
 package com.hll.grpc.book.server.service;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.hll.grpc.api.auth.AuthServiceGrpc;
 import com.hll.grpc.api.auth.AuthServiceProto;
-import com.hll.grpc.book.server.config.TokenStore;
 import io.grpc.stub.StreamObserver;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.io.UnsupportedEncodingException;
 
 /**
  * Author: huangll
@@ -13,9 +15,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class AuthServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
-
-  @Autowired
-  private TokenStore tokenStore;
 
   @Override
   public void authenticate(AuthServiceProto.Credit credit, StreamObserver<AuthServiceProto.Result> responseObserver) {
@@ -27,7 +26,6 @@ public class AuthServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
     if ("huangll".equalsIgnoreCase(username) && "123456".equalsIgnoreCase(password)) {
       AuthServiceProto.Result result = AuthServiceProto.Result.newBuilder().setSuccess(true).setMsg("ok").setToken(generateToken(username)).build();
       responseObserver.onNext(result);
-      tokenStore.put(generateToken(username), credit);
     } else {
       AuthServiceProto.Result result = AuthServiceProto.Result.newBuilder().setSuccess(false).setMsg("not authenticated").build();
       responseObserver.onNext(result);
@@ -37,6 +35,16 @@ public class AuthServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
   }
 
   private String generateToken(String username) {
-    return "xxx-" + username;
+    Algorithm algorithm;
+    try {
+      algorithm = Algorithm.HMAC256("SECRETs");
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
+    return JWT.create()
+        .withIssuer("gsafety")
+        .withSubject("huangll")
+        .withClaim("name", username)
+        .sign(algorithm);
   }
 }
